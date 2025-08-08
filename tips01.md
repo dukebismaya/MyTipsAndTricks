@@ -420,9 +420,38 @@ List available updates:
 winget upgrade
 ```
 
-Check Windows Update status:
+Check Windows Update status (requires PSWindowsUpdate module):
 ```powershell
+# First install the module (run as Administrator):
+Install-Module PSWindowsUpdate -Force
+# Then use:
 Get-WindowsUpdate
+```
+
+Alternative - Check Windows Update without additional modules:
+```powershell
+# Check last install date
+Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 10 | Format-Table -AutoSize
+```
+
+Check pending reboot status:
+```powershell
+# Check if reboot is required
+if (Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired" -ErrorAction SilentlyContinue) {
+    Write-Host "Reboot Required" -ForegroundColor Red
+} else {
+    Write-Host "No Reboot Required" -ForegroundColor Green
+}
+```
+
+Windows Update via Settings (GUI):
+```cmd
+ms-settings:windowsupdate
+```
+
+Force Windows Update check via WUAUCLT (older method):
+```cmd
+wuauclt /detectnow /updatenow
 ```
 
 ### Startup Management
@@ -472,12 +501,92 @@ Start-Service -Name "ServiceName"
 ### Quick File Operations
 Open current folder in Explorer:
 ```powershell
+# PowerShell only:
 ii .
+# Alternative that works in both CMD and PowerShell:
+explorer .
+```
+
+```cmd
+# CMD:
+explorer .
+# or
+start .
 ```
 
 Open command prompt in current location:
 ```cmd
+# From CMD (opens new CMD window):
+start cmd
+```
+
+```powershell
+# From PowerShell (opens new PowerShell window):
+Start-Process powershell -WorkingDirectory (Get-Location)
+```
+
+Open PowerShell from CMD:
+```cmd
+powershell
+```
+
+Open CMD from PowerShell:
+```powershell
 cmd
+```
+
+### Universal File Operations (work in both CMD and PowerShell)
+
+Open current directory in Explorer:
+```
+explorer .
+```
+
+Open file with default program:
+```
+start filename.txt
+```
+
+Copy files:
+```cmd
+# CMD:
+copy "source.txt" "destination.txt"
+xcopy "source_folder" "dest_folder" /E /I
+
+# PowerShell:
+Copy-Item "source.txt" "destination.txt"
+Copy-Item "source_folder" "dest_folder" -Recurse
+```
+
+Move/rename files:
+```cmd
+# CMD:
+move "oldname.txt" "newname.txt"
+
+# PowerShell:
+Move-Item "oldname.txt" "newname.txt"
+```
+
+Delete files:
+```cmd
+# CMD:
+del "filename.txt"
+rmdir "foldername" /s
+
+# PowerShell:
+Remove-Item "filename.txt"
+Remove-Item "foldername" -Recurse
+```
+
+Create directory:
+```cmd
+# CMD:
+mkdir "newfolder"
+
+# PowerShell:
+New-Item -ItemType Directory -Name "newfolder"
+# or
+mkdir "newfolder"
 ```
 
 ### File Search and Management
